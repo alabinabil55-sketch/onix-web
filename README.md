@@ -1,4 +1,4 @@
-# ONIX WEB — Projet de démarrage fonctionnel
+# ONIX WEB — Projet de démarrage fonctionnel BN
 
 ONIX WEB est une application Next.js connectable à Supabase : catalogue, fiches d'œuvres, lecteur vertical, inscription/connexion, profil, bibliothèque, historique, recherche, contact et espace admin protégé par rôle.
 
