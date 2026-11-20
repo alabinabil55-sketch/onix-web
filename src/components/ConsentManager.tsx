@@ -1,0 +1,15 @@
+"use client";
+import { useEffect, useState } from "react";
+import { Cookie, Settings2, X } from "lucide-react";
+type Consent={necessary:true;ads:boolean;personalized:boolean;updatedAt:string};
+export default function ConsentManager(){
+ const [choice,setChoice]=useState<Consent|null>(null),[open,setOpen]=useState(false),[ads,setAds]=useState(false),[personalized,setPersonalized]=useState(false);
+ useEffect(()=>{try{const v=JSON.parse(localStorage.getItem("onix-consent-v1")||"null");if(v){setChoice(v);setAds(!!v.ads);setPersonalized(!!v.personalized)}}catch{}},[]);
+ const save=(a:boolean,p:boolean)=>{const v={necessary:true,ads:a,personalized:a&&p,updatedAt:new Date().toISOString()};localStorage.setItem("onix-consent-v1",JSON.stringify(v));setChoice(v);setAds(a);setPersonalized(a&&p);setOpen(false);window.dispatchEvent(new CustomEvent("onix-consent-updated",{detail:v}))};
+ if(choice&&!open)return <button onClick={()=>setOpen(true)} className="fixed bottom-3 left-3 z-40 rounded-full border border-line bg-panel px-3 py-2 text-xs text-muted shadow-xl"><Cookie size={14} className="mr-2 inline"/>Cookies</button>;
+ return <div className="fixed inset-x-3 bottom-3 z-[120] mx-auto max-w-2xl rounded-2xl border border-line bg-[#171925] p-5 shadow-2xl"><div className="flex items-start justify-between gap-3"><div><p className="font-bold">Votre confidentialité compte</p><p className="mt-2 text-sm leading-6 text-muted">ONIX utilise les cookies nécessaires au fonctionnement du site. Avec votre accord, des technologies publicitaires peuvent afficher des annonces personnalisées et mesurer leur performance. Dans cette première intégration AdSense, les annonces ne sont chargées que si vous acceptez aussi la personnalisation. Vous pouvez refuser les publicités et modifier votre choix à tout moment.</p></div><button aria-label="Fermer" onClick={()=>setOpen(false)} className="rounded-lg p-1 hover:bg-white/10"><X size={18}/></button></div>
+ <div className="mt-4 flex flex-wrap gap-4 text-sm"><label className="flex items-center gap-2"><input type="checkbox" checked readOnly disabled/> Nécessaires</label><label className="flex items-center gap-2"><input type="checkbox" checked={ads} onChange={e=>{setAds(e.target.checked);if(!e.target.checked)setPersonalized(false)}}/> Publicités</label><label className="flex items-center gap-2"><input type="checkbox" checked={personalized} disabled={!ads} onChange={e=>setPersonalized(e.target.checked)}/> Publicités personnalisées</label></div>
+ <div className="mt-5 flex flex-wrap justify-end gap-2"><button className="btn-secondary" onClick={()=>save(false,false)}>Tout refuser</button><button className="btn-secondary" onClick={()=>save(ads,personalized)}>Enregistrer mes choix</button><button className="btn-primary" onClick={()=>save(true,true)}>Tout accepter</button></div>
+ <p className="mt-3 text-[11px] text-muted">Ce panneau est un mécanisme de préférence simple. Avant AdSense, configurez une CMP certifiée Google si elle est exigée pour vos visiteurs et marchés.</p>
+ </div>
+}

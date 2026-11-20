@@ -1,0 +1,3 @@
+import Link from "next/link";
+import type { Webtoon } from "@/lib/types";
+export default function WebtoonCard({item}:{item:Webtoon}){return <Link href={`/webtoon/${item.slug}`} className="group min-w-0"><div className="cover-frame"><div className="cover-art" style={item.cover_url?{backgroundImage:`linear-gradient(180deg,transparent,rgba(0,0,0,.55)),url(${item.cover_url})`}:{}}><span className="cover-mark">ONIX<br/><small>ORIGINAL</small></span></div></div><div className="pt-3"><h3 className="truncate font-semibold text-white transition group-hover:text-violet">{item.title}</h3><p className="mt-1 truncate text-xs text-muted">{item.author_name||"Auteur ONIX"} · {item.status==="completed"?"Terminé":"En cours"}</p></div></Link>}

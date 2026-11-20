@@ -1,0 +1,26 @@
+project_id = "onix-web"
+
+[api]
+enabled = true
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/**"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.rate_limit]
+# Ajuster également les limites dans Dashboard > Authentication > Rate Limits.
+email_sent = 2
+sms_sent = 2
+anonymous_users = 30
+token_refresh = 150
+sign_in_sign_ups = 30
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
