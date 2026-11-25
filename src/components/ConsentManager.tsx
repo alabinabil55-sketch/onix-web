@@ -1,15 +1,148 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Cookie, Settings2, X } from "lucide-react";
-type Consent={necessary:true;ads:boolean;personalized:boolean;updatedAt:string};
-export default function ConsentManager(){
- const [choice,setChoice]=useState<Consent|null>(null),[open,setOpen]=useState(false),[ads,setAds]=useState(false),[personalized,setPersonalized]=useState(false);
- useEffect(()=>{try{const v=JSON.parse(localStorage.getItem("onix-consent-v1")||"null");if(v){setChoice(v);setAds(!!v.ads);setPersonalized(!!v.personalized)}}catch{}},[]);
- const save=(a:boolean,p:boolean)=>{const v={necessary:true,ads:a,personalized:a&&p,updatedAt:new Date().toISOString()};localStorage.setItem("onix-consent-v1",JSON.stringify(v));setChoice(v);setAds(a);setPersonalized(a&&p);setOpen(false);window.dispatchEvent(new CustomEvent("onix-consent-updated",{detail:v}))};
- if(choice&&!open)return <button onClick={()=>setOpen(true)} className="fixed bottom-3 left-3 z-40 rounded-full border border-line bg-panel px-3 py-2 text-xs text-muted shadow-xl"><Cookie size={14} className="mr-2 inline"/>Cookies</button>;
- return <div className="fixed inset-x-3 bottom-3 z-[120] mx-auto max-w-2xl rounded-2xl border border-line bg-[#171925] p-5 shadow-2xl"><div className="flex items-start justify-between gap-3"><div><p className="font-bold">Votre confidentialité compte</p><p className="mt-2 text-sm leading-6 text-muted">ONIX utilise les cookies nécessaires au fonctionnement du site. Avec votre accord, des technologies publicitaires peuvent afficher des annonces personnalisées et mesurer leur performance. Dans cette première intégration AdSense, les annonces ne sont chargées que si vous acceptez aussi la personnalisation. Vous pouvez refuser les publicités et modifier votre choix à tout moment.</p></div><button aria-label="Fermer" onClick={()=>setOpen(false)} className="rounded-lg p-1 hover:bg-white/10"><X size={18}/></button></div>
- <div className="mt-4 flex flex-wrap gap-4 text-sm"><label className="flex items-center gap-2"><input type="checkbox" checked readOnly disabled/> Nécessaires</label><label className="flex items-center gap-2"><input type="checkbox" checked={ads} onChange={e=>{setAds(e.target.checked);if(!e.target.checked)setPersonalized(false)}}/> Publicités</label><label className="flex items-center gap-2"><input type="checkbox" checked={personalized} disabled={!ads} onChange={e=>setPersonalized(e.target.checked)}/> Publicités personnalisées</label></div>
- <div className="mt-5 flex flex-wrap justify-end gap-2"><button className="btn-secondary" onClick={()=>save(false,false)}>Tout refuser</button><button className="btn-secondary" onClick={()=>save(ads,personalized)}>Enregistrer mes choix</button><button className="btn-primary" onClick={()=>save(true,true)}>Tout accepter</button></div>
- <p className="mt-3 text-[11px] text-muted">Ce panneau est un mécanisme de préférence simple. Avant AdSense, configurez une CMP certifiée Google si elle est exigée pour vos visiteurs et marchés.</p>
- </div>
+import { useState, useEffect } from "react";
+import { Cookie, Settings, X } from "lucide-react";
+
+type Consent = {
+  necessary: boolean;
+  ads: boolean;
+  personalized: boolean;
+  updatedAt: string;
+};
+
+export default function ConsentManager() {
+  const [consent, setConsent] = useState<Consent | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const save = (a: boolean, p: boolean) => {
+    setConsent({
+      necessary: true,
+      ads: a,
+      personalized: p,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  useEffect(() => {
+    try {
+      const r = localStorage.getItem("consent");
+      if (r) setConsent(JSON.parse(r));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (consent) {
+      try {
+        localStorage.setItem("consent", JSON.stringify(consent));
+      } catch {}
+    }
+  }, [consent]);
+
+  if (!consent) {
+    return (
+      <div className="fixed bottom-4 left-4 right-4 md:left-auto md:max-w-md z-50 bg-slate-900 text-white p-4 rounded-xl shadow-2xl border border-slate-700 flex flex-col gap-3">
+        <div className="flex items-center gap-2 text-amber-400 font-semibold text-sm">
+          <Cookie className="w-4 h-4" />
+          <span>Cookies &amp; Confidentialité</span>
+        </div>
+        <p className="text-xs text-slate-300 leading-relaxed">
+          Nous utilisons des cookies pour améliorer votre expérience et diffuser des publicités pertinentes.
+        </p>
+        <div className="flex flex-wrap gap-2 justify-end">
+          <button
+            onClick={() => setOpen(true)}
+            className="px-3 py-1.5 text-xs rounded-lg border border-slate-600 hover:bg-slate-800 flex items-center gap-1"
+          >
+            <Settings className="w-3 h-3" />
+            Personnaliser
+          </button>
+          <button
+            onClick={() => save(false, false)}
+            className="px-3 py-1.5 text-xs rounded-lg bg-slate-700 hover:bg-slate-600"
+          >
+            Refuser
+          </button>
+          <button
+            onClick={() => save(true, true)}
+            className="px-3 py-1.5 text-xs rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold"
+          >
+            Tout accepter
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {open && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-slate-900 text-white max-w-md w-full rounded-2xl p-5 border border-slate-700 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-base">Préférences de cookies</h3>
+              <button onClick={() => setOpen(false)} className="p-1 hover:bg-slate-800 rounded-lg">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/70">
+                <div>
+                  <p className="font-medium">Essentiels</p>
+                  <p className="text-xs text-slate-400">Toujours actifs</p>
+                </div>
+                <input type="checkbox" checked disabled className="accent-amber-500" />
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/70">
+                <div>
+                  <p className="font-medium">Publicités</p>
+                  <p className="text-xs text-slate-400">Annonces ciblées</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={consent.ads}
+                  onChange={(e) => setConsent({ ...consent, ads: e.target.checked })}
+                  className="accent-amber-500"
+                />
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-800/70">
+                <div>
+                  <p className="font-medium">Contenu personnalisé</p>
+                  <p className="text-xs text-slate-400">Recommandations adaptées</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={consent.personalized}
+                  onChange={(e) => setConsent({ ...consent, personalized: e.target.checked })}
+                  className="accent-amber-500"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => save(false, false)}
+                className="px-4 py-2 text-xs rounded-xl bg-slate-800 hover:bg-slate-700"
+              >
+                Tout refuser
+              </button>
+              <button
+                onClick={() => {
+                  save(consent.ads, consent.personalized);
+                  setOpen(false);
+                }}
+                className="px-4 py-2 text-xs rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <button
+        onClick={() => setOpen(true)}
+        aria-label="Paramètres des cookies"
+        className="fixed bottom-4 left-4 z-40 p-2.5 rounded-full bg-slate-900 text-amber-400 border border-slate-700 shadow-lg hover:scale-105 transition"
+      >
+        <Cookie className="w-4 h-4" />
+      </button>
+    </>
+  );
 }
